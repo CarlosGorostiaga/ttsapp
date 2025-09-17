@@ -1,27 +1,54 @@
-# Ttsapp
+# TTSApp – Entrenador de fuerza con voz
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
+Aplicación Angular que guía una sesión de entrenamiento de fuerza usando la API Web Speech para generar mensajes de voz por serie. Permite elegir ejercicios, ajustar el nivel del atleta y personalizar la voz del entrenador virtual, convirtiéndola en una herramienta ideal para boxes, gimnasios caseros o atletas que quieren concentrarse en la técnica sin mirar la pantalla.
 
-## Development server
+## Características principales
+- **Biblioteca de ejercicios guiados**: selección rápida entre jalón al pecho, press banca, sentadilla, peso muerto, dominadas, press militar, remo con barra, fondos y más.
+- **Mensajes por nivel**: indicaciones específicas para perfiles principiante, intermedio y avanzado, organizadas por serie en `src/app/data/prompts.ts`.
+- **Text-to-Speech mejorado**: soporte para voces en español, prioridad a voces de Google, control de velocidad y tono, además de persistencia en `localStorage`.
+- **Flujo de entrenamiento interactivo**: inicia, avanza o reinicia las series manteniendo seguimiento visual del progreso.
+- **Diseño responsive con Tailwind**: interfaz moderna con paneles configurables y accesible desde desktop o dispositivos móviles.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Requisitos previos
+- Node.js 18 o superior (recomendado 20 LTS).
+- npm 9 o superior (se instala junto con Node.js).
+- Navegador compatible con la [API Web Speech](https://developer.mozilla.org/es/docs/Web/API/Web_Speech_API) para probar el TTS.
 
-## Code scaffolding
+## Puesta en marcha
+```bash
+npm install
+npm start
+```
+El comando `npm start` levanta el servidor de desarrollo en `http://localhost:4200/` con recarga automática.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### Opción con Docker Compose
+Si prefieres aislar el entorno:
+```bash
+docker compose up --build
+```
+El contenedor expone la aplicación en `http://localhost:4200/` y gestiona las dependencias dentro del volumen `node_modules`.
 
-## Build
+## Scripts disponibles
+- `npm start`: inicia el servidor de desarrollo (`ng serve`).
+- `npm run build`: genera la compilación de producción en `dist/`.
+- `npm test`: ejecuta las pruebas unitarias con Karma y Jasmine.
+- `npm run watch`: compila en modo desarrollo y observa los cambios.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Estructura del proyecto
+- `src/app/app.component.*`: bootstrap de la aplicación y carga del `WorkoutComponent`.
+- `src/app/components/workout/`: lógica de la sesión de entrenamiento y la interfaz principal.
+- `src/app/data/prompts.ts`: catálogo de ejercicios y mensajes por perfil.
+- `tailwind.config.js` y `src/styles.css`: configuración de estilos.
 
-## Running unit tests
+## Personalización
+1. **Añadir un nuevo ejercicio**: edita `src/app/data/prompts.ts`, agrega una clave nueva con `name`, `category`, `icon`, `description` y los arrays por nivel (`1`, `2`, `3`).
+2. **Modificar la voz por defecto**: ajusta la lógica en `WorkoutComponent` o borra la configuración guardada en el navegador (`localStorage` -> claves `tts.voice`, `tts.rate`, `tts.pitch`).
+3. **Cambiar estilos**: utiliza las utilidades de Tailwind o extiende `styles.css`.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Consejos para producción
+- Ejecuta `npm run build` y despliega el contenido de `dist/` en cualquier servidor estático.
+- Considera un *polyfill* o una guía visual alternativa para navegadores que no soporten Web Speech.
+- Configura HTTPS en producción para maximizar la compatibilidad de la síntesis de voz.
 
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+## Licencia
+Proyecto distribuido bajo la licencia MIT. Si reutilizas el código, enlaza a este repositorio y comparte mejoras con la comunidad.
