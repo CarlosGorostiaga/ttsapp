@@ -1,0 +1,13 @@
+{
+  "name": "ttsapp",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "web",
+  "workspaceFolder": "/app",
+  "overrideCommand": false,
+  "shutdownAction": "none",
+  "customizations": {
+    "vscode": {
+      "extensions": ["Angular.ng-template", "esbenp.prettier-vscode"]
+    }
+  }
+}
