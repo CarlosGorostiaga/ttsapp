@@ -1,0 +1,313 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+  <div class="mx-auto max-w-4xl">
+    
+    <!-- Header dinámico -->
+    <header class="mb-8">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-2xl">
+          <span>{{ currentExercise?.icon || '💪' }}</span>
+        </div>
+        <div>
+          <h1 class="text-4xl font-bold text-white">
+            {{ currentExercise?.name || 'Jalón al pecho' }}
+          </h1>
+          <p class="text-slate-300 text-lg">
+            {{ currentExercise?.description || 'Mensajes por serie con voz (Web Speech)' }}
+          </p>
+          <div class="flex items-center gap-2 mt-2" *ngIf="currentExercise">
+            <span class="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full text-white text-sm font-semibold">
+              {{ currentExercise.category }}
+            </span>
+            <span class="px-3 py-1 bg-slate-700/50 rounded-full text-slate-300 text-sm">
+              {{ getProfileName(perfil) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Selector de ejercicio -->
+    <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 mb-8 shadow-2xl" *ngIf="ejercicios.length > 1">
+      <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+        </svg>
+        Seleccionar ejercicio ({{ ejercicios.length }} disponibles)
+      </h2>
+      
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div 
+          *ngFor="let ejercicio of ejercicios"
+          (click)="cambiarEjercicio(ejercicio.key)"
+          [ngClass]="{ 
+            'ring-2 ring-purple-500 bg-purple-500/20': ejercicioKey === ejercicio.key,
+            'bg-slate-800/30 hover:bg-slate-700/40': ejercicioKey !== ejercicio.key
+          }"
+          class="p-4 rounded-2xl cursor-pointer transition-all duration-200 border border-slate-600/30 hover:border-slate-500/50 group">
+          
+          <div class="text-center">
+            <div class="text-3xl mb-2 group-hover:scale-110 transition-transform duration-200">
+              {{ ejercicio.data.icon }}
+            </div>
+            <h3 class="font-semibold text-white text-sm mb-1">{{ ejercicio.data.name }}</h3>
+            <p class="text-slate-400 text-xs">{{ ejercicio.data.category }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de controles mejorado -->
+    <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 mb-8 shadow-2xl">
+      <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+        </svg>
+        Configuración
+      </h2>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Perfil -->
+        <div class="space-y-3">
+          <label for="perfil" class="block text-sm font-medium text-slate-200 uppercase tracking-wider">
+            Nivel de entrenamiento
+          </label>
+          <select 
+            id="perfil" 
+            [(ngModel)]="perfil" 
+            (ngModelChange)="onPerfilChange()"
+            class="w-full bg-slate-800/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+            <option [value]="1">🌱 Principiante</option>
+            <option [value]="2">💪 Intermedio</option>
+            <option [value]="3">🔥 Avanzado</option>
+          </select>
+          <div class="text-xs text-slate-400">
+            {{ prompts.length }} mensajes disponibles
+          </div>
+        </div>
+
+        <!-- Voz -->
+        <div class="space-y-3" *ngIf="voices.length">
+          <label for="voice" class="block text-sm font-medium text-slate-200 uppercase tracking-wider">
+            Voz del entrenador
+          </label>
+          <select 
+            id="voice" 
+            [(ngModel)]="selectedVoice" 
+            (change)="onVoiceChange()"
+            class="w-full bg-slate-800/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+            <option *ngFor="let v of voices" [value]="v.name">
+              {{ v.name }} ({{ v.lang }})
+            </option>
+          </select>
+          <div class="text-xs text-slate-400">
+            {{ voices.length }} voces disponibles
+          </div>
+        </div>
+
+        <!-- Velocidad -->
+        <div class="space-y-3" *ngIf="voices.length">
+          <label for="rate" class="block text-sm font-medium text-slate-200 uppercase tracking-wider">
+            Velocidad: {{ rate | number:'1.2-2' }}x
+          </label>
+          <input 
+            id="rate" 
+            type="range" 
+            min="0.7" 
+            max="1.3" 
+            step="0.05"
+            [ngModel]="rate" 
+            (ngModelChange)="onRateChange($event)"
+            class="w-full h-3 bg-slate-700 rounded-lg appearance-none cursor-pointer slider">
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>Lento</span>
+            <span>Rápido</span>
+          </div>
+        </div>
+
+        <!-- Tono -->
+        <div class="space-y-3" *ngIf="voices.length">
+          <label for="pitch" class="block text-sm font-medium text-slate-200 uppercase tracking-wider">
+            Tono: {{ pitch | number:'1.2-2' }}
+          </label>
+          <input 
+            id="pitch" 
+            type="range" 
+            min="0.8" 
+            max="1.2" 
+            step="0.05"
+            [ngModel]="pitch" 
+            (ngModelChange)="onPitchChange($event)"
+            class="w-full h-3 bg-slate-700 rounded-lg appearance-none cursor-pointer slider">
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>Grave</span>
+            <span>Agudo</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Test de voz -->
+      <div class="mt-6 pt-6 border-t border-slate-600/30" *ngIf="voices.length">
+        <button 
+          (click)="speak('Hola, esta es una prueba de la voz seleccionada para el entrenamiento.')"
+          class="px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded-xl border border-green-500/50 transition-all duration-200 text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 12.536l-6-6M9.536 6.536h6v6"></path>
+          </svg>
+          Probar voz
+        </button>
+      </div>
+    </div>
+
+    <!-- Navegación de series -->
+    <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 mb-8 shadow-2xl" *ngIf="prompts.length > 0">
+      <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Series del ejercicio ({{ prompts.length }} total)
+      </h3>
+      <div class="flex flex-wrap gap-3">
+        <button 
+          *ngFor="let prompt of prompts; let i = index"
+          (click)="irASerie(i)"
+          [ngClass]="{
+            'bg-gradient-to-r from-blue-500 to-purple-500 text-white': i === serieIndex,
+            'bg-slate-700/30 text-slate-300 hover:bg-slate-600/40': i !== serieIndex
+          }"
+          class="px-4 py-2 rounded-xl font-semibold transition-all duration-200 border border-slate-500/30 flex items-center gap-2">
+          <span>Serie {{ i + 1 }}</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" *ngIf="i === serieIndex">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tarjeta del mensaje -->
+    <div class="bg-slate-800/40 backdrop-blur-2xl border border-slate-600/30 rounded-3xl p-8 shadow-2xl mb-8">
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse"></div>
+            <span class="text-slate-300 font-semibold text-sm uppercase tracking-wider">
+              Serie {{ serieIndex + 1 }} de {{ prompts.length || 3 }}
+            </span>
+          </div>
+          <div class="text-slate-400 text-sm" *ngIf="currentExercise">
+            {{ currentExercise.category }}
+          </div>
+        </div>
+        
+        <div class="text-slate-400 text-sm">
+          <span class="truncate">{{ selectedVoice || 'Voz por defecto' }}</span>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <p class="text-2xl sm:text-3xl font-bold text-white leading-relaxed">
+          {{ mensajeActual }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+      <button 
+        (click)="empezar()" 
+        [disabled]="started"
+        class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-2xl shadow-xl hover:scale-105 transform transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" *ngIf="!started">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1a3 3 0 000 6h1m0-6v6m0-6H9m1.5-1.5l-.5-.5M15 10h1a3 3 0 000 6h1m0-6v6m0-6h-1m1.5-1.5l-.5-.5"></path>
+        </svg>
+        <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" *ngIf="started">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        {{ started ? 'En progreso...' : 'Comenzar entrenamiento' }}
+      </button>
+
+      <button 
+        (click)="siguienteSerie()" 
+        [disabled]="!started"
+        class="px-8 py-4 bg-slate-700/50 hover:bg-slate-600/50 text-white font-bold rounded-2xl border border-slate-500/50 shadow-xl hover:scale-105 transform transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+        </svg>
+        {{ serieIndex < prompts.length - 1 ? 'Siguiente serie' : 'Finalizar' }}
+      </button>
+
+      <button 
+        (click)="reiniciar()" 
+        [disabled]="!started && serieIndex === 0"
+        class="px-6 py-4 bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-400 font-bold rounded-2xl border border-yellow-500/50 shadow-xl hover:scale-105 transform transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        Reiniciar
+      </button>
+    </div>
+
+    <!-- Progreso -->
+    <div class="mb-6">
+      <div class="bg-slate-800/30 rounded-2xl h-4 overflow-hidden border border-slate-600/20">
+        <div 
+          class="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-2xl transition-all duration-700 ease-out relative"
+          [style.width.%]="progressPercentage">
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+        </div>
+      </div>
+      
+      <div class="flex justify-between items-center mt-3">
+        <p class="text-slate-400 text-sm">
+          Progreso: {{ progressPercentage | number:'1.0-0' }}%
+        </p>
+        <p class="text-slate-400 text-sm" *ngIf="currentExercise">
+          {{ currentExercise.category }} • {{ currentExercise.name }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" *ngIf="started || serieIndex > 0">
+      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-center">
+        <div class="text-2xl font-bold text-white">{{ serieIndex + 1 }}</div>
+        <div class="text-slate-400 text-sm">Serie actual</div>
+      </div>
+      
+      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-center">
+        <div class="text-2xl font-bold text-white">{{ prompts.length }}</div>
+        <div class="text-slate-400 text-sm">Series totales</div>
+      </div>
+      
+      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-center">
+        <div class="text-2xl font-bold text-white">{{ prompts.length - serieIndex - (started ? 0 : 1) }}</div>
+        <div class="text-slate-400 text-sm">Restantes</div>
+      </div>
+      
+      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-center">
+        <div class="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+          {{ voices.length }}
+        </div>
+        <div class="text-slate-400 text-sm">Voces disponibles</div>
+      </div>
+    </div>
+
+    <!-- Debug info -->
+    <div class="mt-8 p-4 bg-slate-900/50 rounded-xl text-xs text-slate-400" *ngIf="!started">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <strong>Ejercicio:</strong> {{ ejercicioKey }}<br>
+          <strong>Perfil:</strong> {{ perfil }} ({{ getProfileName(perfil) }})<br>
+          <strong>Serie:</strong> {{ serieIndex + 1 }}/{{ prompts.length }}
+        </div>
+        <div>
+          <strong>Voz:</strong> {{ selectedVoice || 'Ninguna' }}<br>
+          <strong>Velocidad:</strong> {{ rate }}x<br>
+          <strong>Tono:</strong> {{ pitch }}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
